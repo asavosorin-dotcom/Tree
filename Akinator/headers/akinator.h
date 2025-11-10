@@ -13,15 +13,24 @@ struct AkinNode_t
     char* string;
     AkinNode_t* left;
     AkinNode_t* right;
+
 };
+
+enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
 
 AkinNode_t* AkinNodeCtor (char* data);
 void AkinDumpNode(AkinNode_t* node, FILE* file_dump);
 void AkinDumpImage(AkinNode_t* node);
 void AkinDump(AkinNode_t* node, const char* text);
 AkinNode_t* AkinInsertElem(AkinNode_t** node, char* value);
-// void PrintNode(const AkinNode_t* node);
+void AkinPrintNode(const AkinNode_t* node);
+int Akin(AkinNode_t* node);
+
+void AkinAskQuestion(AkinNode_t* node);
+void AkinGetAnswer(char* answer);
+AkinNode_t* AkinInsertNewElem(AkinNode_t* node);
 
 void AkinDtor(AkinNode_t* node);
+
 
 #endif

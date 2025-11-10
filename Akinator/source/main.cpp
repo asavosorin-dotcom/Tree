@@ -1,5 +1,7 @@
 #include "akinmain.h"
 
+extern FILE* file_akin;
+
 int main()
 {
     AkinNode_t* node0 = AkinNodeCtor("Is it animal?");
@@ -8,6 +10,10 @@ int main()
     AkinNode_t* node3 = AkinInsertElem(&node2->left, "Petrovich");
     AkinNode_t* node4 = AkinInsertElem(&node2->right, "Pasha T");
 
+    Akin(node0);
+
+    AkinPrintNode(node0);
     AkinDump(node0, "Akinator");
     AkinDtor(node0);
+    fclose(file_akin);
 }
