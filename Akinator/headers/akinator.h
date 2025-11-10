@@ -1,0 +1,27 @@
+#ifndef _AKINATOR_H_
+#define _AKINATOR_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define PRINT_IMAGE(...) fprintf(file_dump, __VA_ARGS__)
+#define PRINT_HTM(...)   fprintf(file_htm, __VA_ARGS__)
+
+struct AkinNode_t 
+{
+    char* string;
+    AkinNode_t* left;
+    AkinNode_t* right;
+};
+
+AkinNode_t* AkinNodeCtor (char* data);
+void AkinDumpNode(AkinNode_t* node, FILE* file_dump);
+void AkinDumpImage(AkinNode_t* node);
+void AkinDump(AkinNode_t* node, const char* text);
+AkinNode_t* AkinInsertElem(AkinNode_t** node, char* value);
+// void PrintNode(const AkinNode_t* node);
+
+void AkinDtor(AkinNode_t* node);
+
+#endif
