@@ -5,14 +5,15 @@ FILE* file_akin = fopen("akinat.txt" , "w");
 
 static int index_png = 0;
 
-AkinNode_t* AkinNodeCtor (const char* data, AkinNode_t* parent)
+AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
 {
     AkinNode_t* node = (AkinNode_t* ) calloc(1, sizeof(AkinNode_t));
     
-    node->string = strdup(data);
     node->left = NULL;
     node->right = NULL;
-    node->parent = parent; 
+    node->string = data;
+    node->parent = parent;
+    node->flag_for_free = flag; 
 
     return node;
 }
@@ -45,7 +46,8 @@ AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* par
 {
     // int res = a == b ? 1 : 0;
 
-    *node = AkinNodeCtor(value, parent);
+    char* data = strdup(value);
+    *node = AkinNodeCtor(data, parent, FLAG_FREE);
 
     return *node;
 }
@@ -60,7 +62,7 @@ void AkinDtor(AkinNode_t* node)
     if (node->right != NULL)
         AkinDtor(node->right);
     
-    free(node->string);
+    if (node->flag_for_free == FLAG_FREE) free(node->string);
     free(node);
 }
 
@@ -116,6 +118,7 @@ int Akin(AkinNode_t* node)
             if (node->right == NULL)
             {
                 printf("URAAAA!!!\n");
+                break;
             } else
             {
                 node = node->left;
@@ -143,23 +146,21 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
 {
     printf("Who is it?\n");
 
-    char new_elem[30] = "";
+    char* new_elem = (char* ) calloc(30, sizeof(char)); 
     scanf(" %[^\n]", new_elem);
 
     printf("Write different with %s. It (verb)... \n", node->string);
     char new_question[30] = "";
     scanf(" %[^\n]", new_question);
 
-    
-    AkinNode_t* new_node_right = AkinNodeCtor(node->string, node);
-    free(node->string);
+    AkinNode_t* new_node_right = AkinNodeCtor(node->string, node, FLAG_FREE);
     node->string = strdup(new_question);
     
-    // printf("new_question = %s\n", new_node_question->string);
+    printf("new_question = %s\n", node->string);
     node->right = new_node_right;
     // printf("###%p\n", new_node_question->right);
 
-    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node);
+    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node, FLAG_FREE);
     node->left = new_node_left;
 
     return node;

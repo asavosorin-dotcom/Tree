@@ -4,7 +4,8 @@ extern FILE* file_akin;
 
 int main()
 {
-    AkinNode_t* node0 = AkinNodeCtor("animal", NULL);
+    char* data0 = strdup("animal");
+    AkinNode_t* node0 = AkinNodeCtor(data0, NULL, FLAG_FREE);
     AkinNode_t* node1 = AkinInsertElem(&node0->left, "Poltorashka", node0);
     AkinNode_t* node2 = AkinInsertElem(&node0->right, "Teach matan", node0);
     AkinNode_t* node3 = AkinInsertElem(&node2->left, "Petrovich", node2);
