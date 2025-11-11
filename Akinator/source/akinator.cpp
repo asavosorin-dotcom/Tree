@@ -1,28 +1,28 @@
 #include "akinator.h"
 
 FILE* file_htm  = fopen("Logfile.htm", "w");
-FILE* file_akin = fopen("akinat.txt", "w");
+FILE* file_akin = fopen("akinat.txt" , "w");
 
 static int index_png = 0;
 
-char* arr[20] = {};
-int counter = 0;
-
-AkinNode_t* AkinNodeCtor (char* data)
+AkinNode_t* AkinNodeCtor (const char* data, AkinNode_t* parent)
 {
     AkinNode_t* node = (AkinNode_t* ) calloc(1, sizeof(AkinNode_t));
     
-    node->string = data;
+    node->string = strdup(data);
     node->left = NULL;
-    node->right = NULL; 
+    node->right = NULL;
+    node->parent = parent; 
 
     return node;
 }
 
 void AkinDumpNode(AkinNode_t* node, FILE* file_dump)
 {
-
-    PRINT_IMAGE("\tnode%p[label = \"{%s | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node , node->string);
+    if (node->left == NULL && node->right == NULL)
+        PRINT_IMAGE("\tnode%p[label = \"{%s | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node , node->string);
+    else
+        PRINT_IMAGE("\tnode%p[label = \"{Is it %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node , node->string);
     // index *= 10;
 
     if (node->left != NULL) 
@@ -41,15 +41,11 @@ void AkinDumpNode(AkinNode_t* node, FILE* file_dump)
     
 }
 
-//       40
-//    20    60
-//  10  
-
-AkinNode_t* AkinInsertElem(AkinNode_t** node, char* value) // добавляет элемент в дерево
+AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* parent) // добавляет элемент в дерево
 {
     // int res = a == b ? 1 : 0;
 
-    *node = AkinNodeCtor(value);
+    *node = AkinNodeCtor(value, parent);
 
     return *node;
 }
@@ -64,6 +60,7 @@ void AkinDtor(AkinNode_t* node)
     if (node->right != NULL)
         AkinDtor(node->right);
     
+    free(node->string);
     free(node);
 }
 
@@ -72,27 +69,31 @@ void AkinPrintNode(const AkinNode_t* node)
     
     fprintf(file_akin, "(");
 
+    fprintf(file_akin, "\"%s\"", node->string);
+
     if (node->left)
         AkinPrintNode(node->left);
-    
-    fprintf(file_akin, "\"%s\"", node->string);
+    else
+        fprintf(file_akin, "nil");
 
     if (node->right)
         AkinPrintNode(node->right);
+    else
+        fprintf(file_akin, "nil");
 
     fprintf(file_akin, ")");
 }
 
 void AkinAskQuestion(AkinNode_t* node)
 {
-    printf("%s\n", node->string);
+    printf("Is it %s? [Y/n]\n", node->string);
 }
 
 void AkinGetAnswer(char* answer)
 {
     scanf("%s", answer);
 
-    if (strcmp(answer, "Yes") * strcmp(answer, "No") != 0)
+    if (strcmp(answer, "Y") * strcmp(answer, "n") != 0)
     {
         printf("Wrong answer format. Please write Yes\\No\n");
         AkinGetAnswer(answer);
@@ -102,52 +103,39 @@ void AkinGetAnswer(char* answer)
 
 int Akin(AkinNode_t* node)
 {
-    int flag = 0;
-
-    AkinAskQuestion(node);
-
-    static char answer[5] = "";
-
-    AkinGetAnswer(answer);
-
-    if (strcmp(answer, "Yes") == 0)
+    while (1)
     {
-        if (node->right == NULL)
+        AkinAskQuestion(node);
+
+        static char answer[5] = "";
+
+        AkinGetAnswer(answer);
+
+        if (strcmp(answer, "Y") == 0) // переделать в switch
         {
-            printf("URAAAA!!!\n");
+            if (node->right == NULL)
+            {
+                printf("URAAAA!!!\n");
+            } else
+            {
+                node = node->left;
+            }
         }
         else
         {
-            flag = Akin(node->left);
-            printf("flag = %d\n", flag);
-            if (flag == NEW_QUETION)
+            if (node->right == NULL)
             {
-                printf("#%s\n", node->string);
-                printf("#node->left[%p]\n", node->left);
-                node->left = AkinInsertNewElem(node->left);
-                printf("node[%p]\n", node->left);
-                printf("node->left[%p]\n", node->left->left);
-                printf("node->right[%p]\n", node->left->right);
+                AkinInsertNewElem(node);
+                break;
+            }
+            else
+            {
+                node = node->right;
+            }
+        }
 
-            }
-        }
     }
-    else
-    {
-        if (node->right == NULL)
-        {
-            return NEW_QUETION;
-        }
-        else
-        {
-            flag = Akin(node->right);
-            if (flag == NEW_QUETION)
-            {
-                node->right = AkinInsertNewElem(node->left);
-            }
-        }
-    }
-    
+
     return NO_QUESTION;
 }
 
@@ -155,28 +143,26 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
 {
     printf("Who is it?\n");
 
-    char* new_elem = (char* ) calloc(30, sizeof(char));
-    scanf("%s", new_elem);
-    arr[counter] = new_elem;
-    counter++; 
+    char new_elem[30] = "";
+    scanf(" %[^\n]", new_elem);
 
     printf("Write different with %s. It (verb)... \n", node->string);
-    char* new_question = (char* ) calloc(30, sizeof(char));
-    scanf("%s", new_question);
-    arr[counter] = new_question;
-    counter++;
+    char new_question[30] = "";
+    scanf(" %[^\n]", new_question);
 
-    AkinNode_t* new_node_question = AkinNodeCtor(new_question);
-    printf("new_question = %s\n", new_node_question->string);
-    new_node_question->right = node;
-    printf("###%p\n", new_node_question->right);
-    node->left = NULL;
-    node->right = NULL;
+    
+    AkinNode_t* new_node_right = AkinNodeCtor(node->string, node);
+    free(node->string);
+    node->string = strdup(new_question);
+    
+    // printf("new_question = %s\n", new_node_question->string);
+    node->right = new_node_right;
+    // printf("###%p\n", new_node_question->right);
 
-    AkinNode_t* new_node_elem = AkinNodeCtor(new_elem);
-    new_node_question->left = new_node_elem;
+    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node);
+    node->left = new_node_left;
 
-    return new_node_question;
+    return node;
 }
 
 void AkinDumpImage(AkinNode_t* node)
@@ -209,11 +195,12 @@ void AkinDump(AkinNode_t* node, const char* text)
     PRINT_HTM("Image: \n <img src= \"Akinator/pictures/graph%d.png\">", index_png - 1);
     PRINT_HTM("</pre>");
 
-    for (int i = 0; i < counter - 1; i++)
-        free(arr[i]);
 }
 
-// void MakeAkinSort(int* arr, int capasity)
+// AkinNode_t* ReadNode(int* pos, const char* buffer)
 // {
-    // 
+//     if (buffer[*pos] == '(')
+//     {
+//         AkinNode_t* node = AkinNodeCtor("")
+//     }
 // }
