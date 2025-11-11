@@ -5,6 +5,7 @@
 
 #include "akinator.h"
 #include "colors.h"
+#include "work_with_text.h"
 
 int user_end_programm(const char* string);
 

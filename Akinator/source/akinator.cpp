@@ -1,18 +1,17 @@
 #include "akinator.h"
 
 FILE* file_htm  = fopen("Logfile.htm", "w");
-FILE* file_akin = fopen("akinat.txt" , "w");
+FILE* file_akin = fopen("akinat1.txt" , "w");
 
 static int index_png = 0;
 
-AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
+AkinNode_t* AkinNodeCtor (char* data, Flag_free_t flag)
 {
     AkinNode_t* node = (AkinNode_t* ) calloc(1, sizeof(AkinNode_t));
     
     node->left = NULL;
     node->right = NULL;
     node->string = data;
-    node->parent = parent;
     node->flag_for_free = flag; 
 
     return node;
@@ -47,7 +46,7 @@ AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* par
     // int res = a == b ? 1 : 0;
 
     char* data = strdup(value);
-    *node = AkinNodeCtor(data, parent, FLAG_FREE);
+    *node = AkinNodeCtor(data, FLAG_FREE);
 
     return *node;
 }
@@ -153,14 +152,15 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
     char new_question[30] = "";
     scanf(" %[^\n]", new_question);
 
-    AkinNode_t* new_node_right = AkinNodeCtor(node->string, node, FLAG_FREE);
+    AkinNode_t* new_node_right = AkinNodeCtor(node->string, FLAG_NO_FREE);
     node->string = strdup(new_question);
+    node->flag_for_free = FLAG_FREE;
     
-    printf("new_question = %s\n", node->string);
+    // printf("new_question = %s\n", node->string);
     node->right = new_node_right;
     // printf("###%p\n", new_node_question->right);
 
-    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node, FLAG_FREE);
+    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, FLAG_FREE);
     node->left = new_node_left;
 
     return node;
@@ -198,10 +198,46 @@ void AkinDump(AkinNode_t* node, const char* text)
 
 }
 
-// AkinNode_t* ReadNode(int* pos, const char* buffer)
-// {
-//     if (buffer[*pos] == '(')
-//     {
-//         AkinNode_t* node = AkinNodeCtor("")
-//     }
-// }
+AkinNode_t* ReadNode(int* pos, char* buffer)
+{
+    // printf(BOLD_BLUE "In beginnig read: [%s]\n" RESET, buffer + *pos);
+    if (buffer[*pos] == '(')
+    {
+        AkinNode_t* node = AkinNodeCtor(NULL, FLAG_NO_FREE);
+        (*pos)++; // пропуск скобки
+        node->string = Read_title(pos, buffer);
+        node->left = ReadNode(pos, buffer);
+        node->right = ReadNode(pos, buffer);
+
+        if (buffer[*pos] == ')')
+            (*pos)++;
+            
+        // printf("%s\n", buffer + *pos);
+        return node;
+    }
+    else if (buffer[*pos] == 'n' /*&& buffer[*pos + 1] == 'i' && buffer[*pos + 2] == 'l'*/)
+    {
+        *pos += strlen("nil");
+        // printf("if nil [%s]\n", buffer + *pos);
+        return NULL;
+    }
+    else 
+    {
+        printf("[%s]\n", buffer);
+        // printf(RED "ERROR format code tree\n" RESET);
+        return NULL;
+    }
+    // return ;
+}
+
+char* Read_title(int* pos, char* buffer) // можно возвращать len и вручную изменять указатель, но потом не вызывать strlen()
+{
+    int len = 0;
+    // printf("In read title = [%s]\n", buffer + *pos);
+    sscanf(buffer + *pos, " \"%*[^\"]\"%n", &len);
+    *(buffer + *pos + len - 1) = '\0';
+    (*pos) += len;
+    // printf(CYAN "In read title = [%s]\n" RESET, buffer + *pos + 1);
+
+    return buffer + *pos - len + 1;
+}
