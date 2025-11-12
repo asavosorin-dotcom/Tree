@@ -5,7 +5,7 @@ FILE* file_akin = fopen("akinat1.txt" , "w");
 
 static int index_png = 0;
 
-AkinNode_t* AkinNodeCtor (char* data, Flag_free_t flag)
+AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
 {
     AkinNode_t* node = (AkinNode_t* ) calloc(1, sizeof(AkinNode_t));
     
@@ -13,6 +13,7 @@ AkinNode_t* AkinNodeCtor (char* data, Flag_free_t flag)
     node->right = NULL;
     node->string = data;
     node->flag_for_free = flag; 
+    node->parent = parent;
 
     return node;
 }
@@ -46,7 +47,7 @@ AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* par
     // int res = a == b ? 1 : 0;
 
     char* data = strdup(value);
-    *node = AkinNodeCtor(data, FLAG_FREE);
+    *node = AkinNodeCtor(data, parent, FLAG_FREE);
 
     return *node;
 }
@@ -152,7 +153,7 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
     char new_question[30] = "";
     scanf(" %[^\n]", new_question);
 
-    AkinNode_t* new_node_right = AkinNodeCtor(node->string, FLAG_NO_FREE);
+    AkinNode_t* new_node_right = AkinNodeCtor(node->string, node, FLAG_NO_FREE);
     node->string = strdup(new_question);
     node->flag_for_free = FLAG_FREE;
     
@@ -160,7 +161,7 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
     node->right = new_node_right;
     // printf("###%p\n", new_node_question->right);
 
-    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, FLAG_FREE);
+    AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node, FLAG_FREE);
     node->left = new_node_left;
 
     return node;
@@ -203,11 +204,18 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
     // printf(BOLD_BLUE "In beginnig read: [%s]\n" RESET, buffer + *pos);
     if (buffer[*pos] == '(')
     {
-        AkinNode_t* node = AkinNodeCtor(NULL, FLAG_NO_FREE);
+        AkinNode_t* node = AkinNodeCtor(NULL, NULL, FLAG_NO_FREE);
         (*pos)++; // пропуск скобки
         node->string = Read_title(pos, buffer);
         node->left = ReadNode(pos, buffer);
+
+        if (node->left != NULL)
+            node->left->parent = node;
+
         node->right = ReadNode(pos, buffer);
+
+        if (node->right != NULL)
+            node->right->parent = node;
 
         if (buffer[*pos] == ')')
             (*pos)++;
@@ -240,4 +248,22 @@ char* Read_title(int* pos, char* buffer) // можно возвращать len 
     // printf(CYAN "In read title = [%s]\n" RESET, buffer + *pos + 1);
 
     return buffer + *pos - len + 1;
+}
+
+AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
+{
+    assert(text);
+
+    if (strcmp(root->string, text) == 0)
+        return root;
+    else
+    {
+        if (root->left == NULL && root->right == NULL)
+            return NULL;
+        else
+        {
+            AkinGetNode(root->left, text);
+            AkinGetNode(root->right, text);
+        }
+    }
 }

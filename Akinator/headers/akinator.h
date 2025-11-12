@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "colors.h"
 
@@ -23,7 +24,7 @@ struct AkinNode_t
 
 enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
 
-AkinNode_t* AkinNodeCtor (char* value, Flag_free_t flag);
+AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag);
 AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* parent);
 
 void AkinDumpNode(AkinNode_t* node, FILE* file_dump);
