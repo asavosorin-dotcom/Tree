@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
 
     // char* data0 = strdup("animal");
     // AkinNode_t* root = AkinNodeCtor(data0, FLAG_FREE);
+        // node->right->parent = node;
     // AkinNode_t* node1 = AkinInsertElem(&root->left, "Poltorashka", root);
     // AkinNode_t* node2 = AkinInsertElem(&root->right, "Teach matan", root);
     // AkinNode_t* node3 = AkinInsertElem(&node2->left, "Petrovich", node2);
@@ -24,6 +25,8 @@ int main(int argc, char* argv[])
     do{
         Akin(root);
     } while (user_end_programm("Do you want to countine? [Y/n]"));
+
+    AkinPrintDefinition(root, "Petrovich");
 
     AkinPrintNode(root);
     AkinDump(root, "Akinator");

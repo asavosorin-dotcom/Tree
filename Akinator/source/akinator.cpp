@@ -14,6 +14,7 @@ AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
     node->string = data;
     node->flag_for_free = flag; 
     node->parent = parent;
+    node->yes_no = FLAG_YES;
 
     return node;
 }
@@ -21,9 +22,9 @@ AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
 void AkinDumpNode(AkinNode_t* node, FILE* file_dump)
 {
     if (node->left == NULL && node->right == NULL)
-        PRINT_IMAGE("\tnode%p[label = \"{%s | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node , node->string);
+        PRINT_IMAGE("\tnode%p[label = \"{%p |%s | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent , node->string);
     else
-        PRINT_IMAGE("\tnode%p[label = \"{Is it %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node , node->string);
+        PRINT_IMAGE("\tnode%p[label = \"{%p | Is it %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent, node->string);
     // index *= 10;
 
     if (node->left != NULL) 
@@ -95,7 +96,7 @@ void AkinGetAnswer(char* answer)
 {
     scanf("%s", answer);
 
-    if (strcmp(answer, "Y") * strcmp(answer, "n") != 0)
+    if (strcmp(answer, "y") * strcmp(answer, "n") != 0)
     {
         printf("Wrong answer format. Please write Yes\\No\n");
         AkinGetAnswer(answer);
@@ -113,7 +114,7 @@ int Akin(AkinNode_t* node)
 
         AkinGetAnswer(answer);
 
-        if (strcmp(answer, "Y") == 0) // переделать в switch
+        if (strcmp(answer, "y") == 0) // переделать в switch
         {
             if (node->right == NULL)
             {
@@ -159,10 +160,12 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
     
     // printf("new_question = %s\n", node->string);
     node->right = new_node_right;
+    node->right->yes_no = FLAG_NO;
     // printf("###%p\n", new_node_question->right);
 
     AkinNode_t* new_node_left = AkinNodeCtor(new_elem, node, FLAG_FREE);
     node->left = new_node_left;
+    node->left->yes_no = FLAG_YES;
 
     return node;
 }
@@ -208,15 +211,21 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
         (*pos)++; // пропуск скобки
         node->string = Read_title(pos, buffer);
         node->left = ReadNode(pos, buffer);
-
+        
         if (node->left != NULL)
+        {
             node->left->parent = node;
+            node->left->yes_no = FLAG_YES;
+        }        
 
         node->right = ReadNode(pos, buffer);
-
+        
         if (node->right != NULL)
-            node->right->parent = node;
-
+        {
+            node->right->parent = node; 
+            node->right->yes_no = FLAG_NO;
+        }
+        
         if (buffer[*pos] == ')')
             (*pos)++;
             
@@ -253,17 +262,87 @@ char* Read_title(int* pos, char* buffer) // можно возвращать len 
 AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
 {
     assert(text);
+    
+    AkinNode_t* node = NULL;
+
+    static int counter_iter = 0;
+    counter_iter++;
 
     if (strcmp(root->string, text) == 0)
-        return root;
-    else
     {
-        if (root->left == NULL && root->right == NULL)
-            return NULL;
-        else
+        printf("comp [%d] %s\n", counter_iter, root->string);
+        return root;
+    }
+    
+    
+    if (root->left == NULL && root->right == NULL)
+    {
+        return NULL;
+    }
+    
+    node = AkinGetNode(root->left, text);
+
+    if (node)
+    {
+        printf("[%d] %s\n", counter_iter, node->string);
+        return node;
+    }
+
+    node = AkinGetNode(root->right, text);
+
+    if (node)
+    {
+        printf("[%d] %s\n", counter_iter, node->string);
+        return node;
+    }
+
+    printf("[%d]\n", counter_iter);
+
+    if (root->parent == NULL) printf(BOLD_RED "No such word\n" RESET);
+
+    return NULL;
+}
+
+void AkinMakeDefinition(AkinNode_t* node)
+{
+    char* definit[1000] = {};
+    int counter_words = 0;
+
+    int flag_no = 0;
+
+    printf("%s - eto ", node->string); // вынести в одну общую функцию
+
+    for (;node != NULL; node = node->parent)
+    {
+        definit[counter_words++] = node->string;
+        if (flag_no == 1)
         {
-            AkinGetNode(root->left, text);
-            AkinGetNode(root->right, text);
+            definit[counter_words++] = "ne";
+            flag_no = 0;
         }
+
+        if (node->yes_no == FLAG_NO)
+        {
+            flag_no = 1;
+        }
+        
+    }
+
+    for (int index = counter_words - 1; index > 0; index--)
+    {
+        printf("%s ", definit[index]);
     }
 }
+
+void AkinPrintDefinition(AkinNode_t* root, char* name)
+{
+    AkinMakeDefinition(AkinGetNode(root, name));
+}
+
+// void AkinPrintDifferent(AkinNode_t* root, char* name1, char* name2)
+// {
+//     AkinNode_t* node1 = AkinGetNode(root, name1);
+//     AkinNode_t* node2 = AkinGetNode(root, name2);
+
+    
+// }

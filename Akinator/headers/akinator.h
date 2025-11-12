@@ -11,7 +11,8 @@
 #define PRINT_IMAGE(...) fprintf(file_dump, __VA_ARGS__)
 #define PRINT_HTM(...)   fprintf(file_htm, __VA_ARGS__)
 
-enum Flag_free_t {FLAG_NO_FREE = 0, FLAG_FREE = 1};
+enum Flag_free_t   {FLAG_NO_FREE = 0, FLAG_FREE = 1};
+enum Flag_yes_no_t {FLAG_NO = 0, FLAG_YES = 1};
 
 struct AkinNode_t 
 {
@@ -20,6 +21,7 @@ struct AkinNode_t
     AkinNode_t* right;
     AkinNode_t* parent;
     Flag_free_t flag_for_free;
+    Flag_yes_no_t yes_no;
 };
 
 enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
@@ -40,6 +42,10 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node);
 
 char* Read_title(int* pos, char* buffer);
 AkinNode_t* ReadNode(int* pos, char* buffer);
+
+AkinNode_t* AkinGetNode (AkinNode_t* root, char* text);
+void AkinMakeDefinition(AkinNode_t* node);
+void AkinPrintDefinition(AkinNode_t* root, char* name);
 
 void AkinDtor(AkinNode_t* node);
 
