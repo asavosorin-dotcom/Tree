@@ -17,11 +17,15 @@ enum Flag_yes_no_t {FLAG_NO = 0, FLAG_YES = 1};
 struct AkinNode_t 
 {
     char* string;
+
     AkinNode_t* left;
     AkinNode_t* right;
     AkinNode_t* parent;
+
     Flag_free_t flag_for_free;
     Flag_yes_no_t yes_no;
+
+    int rank;
 };
 
 enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
@@ -44,8 +48,10 @@ char* Read_title(int* pos, char* buffer);
 AkinNode_t* ReadNode(int* pos, char* buffer);
 
 AkinNode_t* AkinGetNode (AkinNode_t* root, char* text);
-void AkinMakeDefinition(AkinNode_t* node);
+void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root);
 void AkinPrintDefinition(AkinNode_t* root, char* name);
+
+void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2);
 
 void AkinDtor(AkinNode_t* node);
 

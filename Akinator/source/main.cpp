@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
 
     AkinPrintNode(root);
     AkinDump(root, "Akinator");
+    AkinPrintDifference(root, "Poltorashka", "Dog");
+
     AkinDtor(root);
 
     free(code_tree - 1);
