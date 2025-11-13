@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
+#include <ctype.h>
 #include "colors.h"
 
 #define PRINT_IMAGE(...) fprintf(file_dump, __VA_ARGS__)
@@ -33,18 +33,19 @@ enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
 AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag);
 AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* parent);
 
-void AkinDumpNode(AkinNode_t* node, FILE* file_dump);
+void AkinDumpNode (AkinNode_t* node, FILE* file_dump);
 void AkinDumpImage(AkinNode_t* node);
-void AkinDump(AkinNode_t* node, const char* text);
-void AkinPrintNode(const AkinNode_t* node);
+void AkinDump     (AkinNode_t* node, const char* text);
+void AkinPrintNode(const AkinNode_t* node, FILE* file_akin);
 
 int Akin(AkinNode_t* node);
 
 void AkinAskQuestion(AkinNode_t* node);
 void AkinGetAnswer  (char* answer);
+
 AkinNode_t* AkinInsertNewElem(AkinNode_t* node);
 
-char* Read_title(int* pos, char* buffer);
+char*       Read_title(int* pos, char* buffer);
 AkinNode_t* ReadNode(int* pos, char* buffer);
 
 AkinNode_t* AkinGetNode (AkinNode_t* root, char* text);
@@ -55,5 +56,6 @@ void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2);
 
 void AkinDtor(AkinNode_t* node);
 
+int skip_space(char* buffer);
 
 #endif

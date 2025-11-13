@@ -1,7 +1,6 @@
 #include "akinator.h"
 
 FILE* file_htm  = fopen("Logfile.htm", "w");
-FILE* file_akin = fopen("akinat1.txt" , "w");
 
 static int index_png = 0;
 
@@ -24,7 +23,7 @@ void AkinDumpNode(AkinNode_t* node, FILE* file_dump)
     if (node->left == NULL && node->right == NULL)
         PRINT_IMAGE("\tnode%p[label = \"{%p |%s | %d | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent , node->string, node->rank);
     else
-        PRINT_IMAGE("\tnode%p[label = \"{%p | %d | Is it %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent, node->rank, node->string);
+        PRINT_IMAGE("\tnode%p[label = \"{%p | %d | Eto %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent, node->rank, node->string);
     // index *= 10;
 
     if (node->left != NULL) 
@@ -67,7 +66,7 @@ void AkinDtor(AkinNode_t* node)
     free(node);
 }
 
-void AkinPrintNode(const AkinNode_t* node)
+void AkinPrintNode(const AkinNode_t* node, FILE* file_akin)
 {
     
     fprintf(file_akin, "(");
@@ -75,12 +74,12 @@ void AkinPrintNode(const AkinNode_t* node)
     fprintf(file_akin, "\"%s\"", node->string);
 
     if (node->left)
-        AkinPrintNode(node->left);
+        AkinPrintNode(node->left, file_akin);
     else
         fprintf(file_akin, "nil");
 
     if (node->right)
-        AkinPrintNode(node->right);
+        AkinPrintNode(node->right, file_akin);
     else
         fprintf(file_akin, "nil");
 
@@ -89,7 +88,7 @@ void AkinPrintNode(const AkinNode_t* node)
 
 void AkinAskQuestion(AkinNode_t* node)
 {
-    printf("Is it %s? [Y/n]\n", node->string);
+    printf(MAGENTA "Eto %s?\n[Y/n] " RESET, node->string);
 }
 
 void AkinGetAnswer(char* answer)
@@ -98,7 +97,7 @@ void AkinGetAnswer(char* answer)
 
     if (strcmp(answer, "y") * strcmp(answer, "n") != 0)
     {
-        printf("Wrong answer format. Please write Yes\\No\n");
+        printf("Wrong answer format. Please write [Y\\n]\n");
         AkinGetAnswer(answer);
     }
 
@@ -118,7 +117,7 @@ int Akin(AkinNode_t* node)
         {
             if (node->right == NULL)
             {
-                printf("URAAAA!!!\n");
+                printf(GREEN "URAAAA!!!\n" RESET);
                 break;
             } else
             {
@@ -194,14 +193,16 @@ void AkinDumpImage(AkinNode_t* node)
 
 void AkinDump(AkinNode_t* node, const char* text)
 {
+    
     PRINT_HTM("<pre>\n");
     PRINT_HTM("\t<h3>DUMP %s</h3>\n", text);
-
+    
     AkinDumpImage(node);
-
+    
     PRINT_HTM("Image: \n <img src= \"Akinator/pictures/graph%d.png\">", index_png - 1);
     PRINT_HTM("</pre>");
-
+    
+    fflush(file_htm);
 }
 
 AkinNode_t* ReadNode(int* pos, char* buffer)
@@ -211,11 +212,17 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
     static int rank = 0;
     rank++;
 
+    *pos += skip_space(buffer + *pos);
+
     if (buffer[*pos] == '(')
     {
         AkinNode_t* node = AkinNodeCtor(NULL, NULL, FLAG_NO_FREE);
         (*pos)++; // пропуск скобки
+
         node->string = Read_title(pos, buffer);
+
+        *pos += skip_space(buffer + *pos);
+
         node->rank = rank;
         node->left = ReadNode(pos, buffer);
         rank--;
@@ -235,6 +242,8 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
             node->right->yes_no = FLAG_NO;
         }
         
+        *pos += skip_space(buffer + *pos);
+
         if (buffer[*pos] == ')')
             (*pos)++;
             
@@ -243,6 +252,7 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
     }
     else if (buffer[*pos] == 'n' /*&& buffer[*pos + 1] == 'i' && buffer[*pos + 2] == 'l'*/)
     {
+        *pos += skip_space(buffer + *pos);
         *pos += strlen("nil");
         // printf("if nil [%s]\n", buffer + *pos);
         return NULL;
@@ -259,13 +269,26 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
 char* Read_title(int* pos, char* buffer) // можно возвращать len и вручную изменять указатель, но потом не вызывать strlen()
 {
     int len = 0;
+    *pos += skip_space(buffer + *pos);
     // printf("In read title = [%s]\n", buffer + *pos);
+
     sscanf(buffer + *pos, " \"%*[^\"]\"%n", &len);
-    *(buffer + *pos + len - 1) = '\0';
+    *(buffer + *pos + len - 1) = '\0'; // меняет вторую кавычку на 0
+
     (*pos) += len;
     // printf(CYAN "In read title = [%s]\n" RESET, buffer + *pos + 1);
-
     return buffer + *pos - len + 1;
+    
+    // char* point_end_name = strchr(buffer + *pos + 1, '"');
+    // *point_end_name = '\0';
+    
+    // len = point_end_name - (buffer + *pos);
+    // *pos += len + 1;
+
+    // printf(MAGENTA "In read title = [%s]\n" RESET, buffer + *pos - len);
+    // printf(CYAN "In read title = [%s]\n" RESET, buffer + *pos + 2);
+
+    // return buffer + *pos - len;
 }
 
 AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
@@ -279,7 +302,6 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
 
     if (strcmp(root->string, text) == 0)
     {
-        printf("comp [%d] %s\n", counter_iter, root->string);
         return root;
     }
     
@@ -293,7 +315,6 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
 
     if (node)
     {
-        printf("[%d] %s\n", counter_iter, node->string);
         return node;
     }
 
@@ -301,11 +322,8 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
 
     if (node)
     {
-        printf("[%d] %s\n", counter_iter, node->string);
         return node;
     }
-
-    printf("[%d]\n", counter_iter);
 
     if (root->parent == NULL) printf(BOLD_RED "No such word\n" RESET);
 
@@ -360,8 +378,8 @@ void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2)
 
     if (node1->rank >= node2->rank)
     {
-        AkinNode_t* node_max = node1;
-        AkinNode_t* node_min = node2;
+        node_max = node1;
+        node_min = node2;
     }
 
     for (int counter = 0; counter < (node_max->rank - node_min->rank); counter++, node_max = node_max->parent) 
@@ -373,9 +391,20 @@ void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2)
     printf("Similarity %s and %s: ", name1, name2);
     AkinMakeDefinition(node_min, root);
 
-    printf("Difference %s and %s:\n  ", name1, name2);
+    printf("Difference %s and %s:\n", name1, name2);
     printf("%s: ", name1);
     AkinMakeDefinition(node1, node_min);
     printf("%s: ", name2);
     AkinMakeDefinition(node2, node_min);
+}
+
+int skip_space(char* buffer)
+{
+    int pos = 0;
+
+    while (isspace(*(buffer + pos))) {
+            pos++;
+        }
+
+    return pos;
 }

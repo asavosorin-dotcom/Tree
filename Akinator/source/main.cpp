@@ -1,34 +1,50 @@
 #include "akinmain.h"
 
-extern FILE* file_akin;
-
 int main(int argc, char* argv[])
 {
-    const char* filename = argv[1];
-    char* code_tree = CreateBuffer(filename).buff + 1;
-    
-    printf("[%s]\n", code_tree);
-
-    int position = 0;
-    AkinNode_t* root = ReadNode(&position, code_tree);
+    const char* filenameread = argv[1];
+    char* code_tree = CreateBuffer(filenameread).buff + 1;
+    FILE* file_akin = fopen(argv[2], "w");
 
     // char* data0 = strdup("animal");
-    // AkinNode_t* root = AkinNodeCtor(data0, FLAG_FREE);
-        // node->right->parent = node;
+    // AkinNode_t* root = AkinNodeCtor(data0, NULL, FLAG_FREE);
     // AkinNode_t* node1 = AkinInsertElem(&root->left, "Poltorashka", root);
     // AkinNode_t* node2 = AkinInsertElem(&root->right, "Teach matan", root);
     // AkinNode_t* node3 = AkinInsertElem(&node2->left, "Petrovich", node2);
     // AkinNode_t* node4 = AkinInsertElem(&node2->right, "Pasha T", node2);
 
+    // printf("[%s]\n", code_tree);
+
+    int position = 0;
+    AkinNode_t* root = ReadNode(&position, code_tree);
+
+    // if (root == NULL)
+    // {
+    //     root = AkinNodeCtor(strdup("Neizvestno chto?"), NULL, FLAG_FREE);
+    // }
+
+    // сбросить буфера
+
     AkinDump(root, "Before akinator");
+
+    printf(GREEN "Start? [y/n]\n" RESET);
+    int c = getchar();
+
+    if (c == 'n')
+    {
+        AkinDtor(root);
+        free(code_tree - 1);
+        fclose(file_akin);
+        return 0;
+    }
 
     do{
         Akin(root);
-    } while (user_end_programm("Do you want to countine? [Y/n]"));
+    } while (user_end_programm("Do you want to countine?"));
 
     AkinPrintDefinition(root, "Petrovich");
 
-    AkinPrintNode(root);
+    AkinPrintNode(root, file_akin);
     AkinDump(root, "Akinator");
     AkinPrintDifference(root, "Poltorashka", "Dog");
 
