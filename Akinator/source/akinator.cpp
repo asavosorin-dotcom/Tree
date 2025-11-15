@@ -4,7 +4,7 @@ FILE* file_htm  = fopen("Logfile.htm", "w");
 
 static int index_png = 0;
 
-AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
+AkinNode_t* AkinNodeCtor (wchar_t* data, AkinNode_t* parent, Flag_free_t flag)
 {
     AkinNode_t* node = (AkinNode_t* ) calloc(1, sizeof(AkinNode_t));
     
@@ -21,9 +21,9 @@ AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag)
 void AkinDumpNode(AkinNode_t* node, FILE* file_dump)
 {
     if (node->left == NULL && node->right == NULL)
-        PRINT_IMAGE("\tnode%p[label = \"{%p |%s | %d | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent , node->string, node->rank);
+        PRINT_IMAGE("\tnode%p[label = \"{%p |%ls | %d | {0 | 0}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent , node->string, node->rank);
     else
-        PRINT_IMAGE("\tnode%p[label = \"{%p | %d | Eto %s? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent, node->rank, node->string);
+        PRINT_IMAGE("\tnode%p[label = \"{%p | %d | Это %ls? | {YES | NO}}\", shape = Mrecord, style = \"filled\", fillcolor = \"#C0FFC0\"]\n", node, node->parent, node->rank, node->string);
     // index *= 10;
 
     if (node->left != NULL) 
@@ -46,7 +46,7 @@ AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* par
 {
     // int res = a == b ? 1 : 0;
 
-    char* data = strdup(value);
+    wchar_t* data = (wchar_t*) value;
     *node = AkinNodeCtor(data, parent, FLAG_FREE);
 
     return *node;
@@ -65,7 +65,7 @@ void AkinDtor(AkinNode_t* node)
     
     if (node->flag_for_free == FLAG_FREE)
     {
-        // printf("Dtor %s\n", node->string);
+        printf("Dtor %ls\n", node->string);
         free(node->string);
     }
     free(node);
@@ -95,7 +95,7 @@ void AkinPrintNode(const AkinNode_t* node, FILE* file_akin)
 
 void AkinAskQuestion(AkinNode_t* node)
 {
-    printf(MAGENTA "Eto %s?\n[Y/n] " RESET, node->string);
+    wprintf(L"Это %ls?\n[Y/n] ", node->string);
 }
 
 void AkinGetAnswer(char* answer)
@@ -112,6 +112,7 @@ void AkinGetAnswer(char* answer)
 
 int Akin(AkinNode_t* node)
 {
+    setlocale(LC_CTYPE, "");
     while (1)
     {
         AkinAskQuestion(node);
@@ -120,7 +121,7 @@ int Akin(AkinNode_t* node)
 
         AkinGetAnswer(answer);
 
-        if (strcmp(answer, "y") == 0) // переделать в switch
+        if (strcmp(answer, "y") == 0) 
         {
             if (node->right == NULL)
             {
@@ -149,19 +150,26 @@ int Akin(AkinNode_t* node)
     return NO_QUESTION;
 }
 
+// 
+
 AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
 {
-    printf("Who is it?\n");
+    wprintf(L"Кто это?\n");
 
-    char* new_elem = (char* ) calloc(100, sizeof(char)); //??
-    scanf(" %[^\n]", new_elem); // ??
+    clear_input_buffer();
+    wchar_t* new_elem = (wchar_t* ) calloc(100, sizeof(wchar_t)); //??
+    wscanf(L" %[^\n]", new_elem); // ??
 
-    printf("Write different with %s. It (verb)... \n", node->string);
-    char new_question[100] = "";
-    scanf(" %[^\n]", new_question);
+    clear_input_buffer();
+
+    wprintf(L"Чем отличается от %ls? Он (глагол)... \n", node->string);
+    clear_input_buffer();
+    wchar_t new_question[100] = L"";
+    wscanf(L" %[^\n]", new_question);
+    // printf("new_question [%ls]", new_question);
 
     AkinNode_t* new_node_right = AkinNodeCtor(node->string, node, FLAG_NO_FREE);
-    node->string = strdup(new_question);
+    node->string = (wchar_t* ) strdup((char* ) new_question);
     node->flag_for_free = FLAG_FREE;
     
     // printf("new_question = %s\n", node->string);
@@ -198,11 +206,11 @@ void AkinDumpImage(AkinNode_t* node)
     index_png++;
 }
 
-void AkinDump(AkinNode_t* node, const char* text)
+void AkinDump(AkinNode_t* node, const wchar_t* text)
 {
     
     PRINT_HTM("<pre>\n");
-    PRINT_HTM("\t<h3>DUMP %s</h3>\n", text);
+    PRINT_HTM("\t<h3>DUMP %ls</h3>\n", text);
     
     AkinDumpImage(node);
     
@@ -226,7 +234,7 @@ AkinNode_t* ReadNode(int* pos, char* buffer)
         AkinNode_t* node = AkinNodeCtor(NULL, NULL, FLAG_NO_FREE);
         (*pos)++; // пропуск скобки
 
-        node->string = Read_title(pos, buffer);
+        node->string = (wchar_t* ) Read_title(pos, buffer);
 
         *pos += skip_space(buffer + *pos);
 
@@ -286,7 +294,7 @@ char* Read_title(int* pos, char* buffer) // можно возвращать len 
     // printf(CYAN "In read title = [%s]\n" RESET, buffer + *pos + 1);
     return buffer + *pos - len + 1;
     
-    // char* point_end_name = strchr(buffer + *pos + 1, '"');
+    // wchar_t* point_end_name = strchr(buffer + *pos + 1, '"');
     // *point_end_name = '\0';
     
     // len = point_end_name - (buffer + *pos);
@@ -298,7 +306,7 @@ char* Read_title(int* pos, char* buffer) // можно возвращать len 
     // return buffer + *pos - len;
 }
 
-AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
+AkinNode_t* AkinGetNode (AkinNode_t* root, wchar_t* text)
 {
     assert(text);
     
@@ -307,7 +315,7 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
     static int counter_iter = 0;
     counter_iter++;
 
-    if (strcmp(root->string, text) == 0)
+    if (strcmp((char*) root->string, (char*) text) == 0)
     {
         return root;
     }
@@ -338,7 +346,7 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
 
 void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root)
 {
-    char* definit[1000] = {};
+    wchar_t* definit[1000] = {};
     int counter_words = 0;
 
     int flag_no = 0;
@@ -348,7 +356,7 @@ void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root)
         definit[counter_words++] = node->string;
         if (flag_no == 1)
         {
-            definit[counter_words++] = "ne";
+            definit[counter_words++] = L"не";
             flag_no = 0;
         }
 
@@ -371,7 +379,7 @@ void AkinPrintDefinition(AkinNode_t* root)
 {
     while (1)
 {
-    printf("Do you want to know definition?\n");
+    printf("Хочешь узнать определение?\n");
     printf("[y\\n] ");
     
     clear_input_buffer();
@@ -385,16 +393,16 @@ void AkinPrintDefinition(AkinNode_t* root)
 
         case 'y':
         {
-            char name[30] = "";
+            wchar_t name[30] = L"";
     
-            printf("Enter name of termin: ");
-            scanf(" %s", name);
+            printf("Введите название термина: ");
+            scanf(" %ls", name);
 
             AkinNode_t* node = AkinGetNode(root, name);
             if (node == NULL)
                 break;
 
-            printf("%s - eto ", node->string);
+            printf("%ls - это ", node->string);
             AkinMakeDefinition(node, root);
         }
             break;
@@ -411,7 +419,7 @@ void AkinPrintDifference(AkinNode_t* root)
     {
         clear_input_buffer();
         
-        printf("Do you want to know difference?\n");
+        printf("Хочешь узнать разницу двух терминов?\n");
         printf("[y\\n] ");
         
         int answer = getchar();
@@ -434,12 +442,12 @@ void AkinPrintDifference(AkinNode_t* root)
 
 void AkinMakeDifference(AkinNode_t* root)
 {
-        char name1[30] = "";
-        char name2[30] = "";
+        wchar_t name1[30] = L"";
+        wchar_t name2[30] = L"";
 
-        printf("Vvedite 2 termina dlya sravneniya:\n");
-        scanf("%s", name1);
-        scanf("%s", name2);
+        printf("Введите два термина для сравнения:\n");
+        scanf("%ls", name1);
+        scanf("%ls", name2);
 
         AkinNode_t* node1 = AkinGetNode(root, name1);
         AkinNode_t* node2 = AkinGetNode(root, name2);
@@ -464,13 +472,13 @@ void AkinMakeDifference(AkinNode_t* root)
         for (; node_max != node_min; node_max = node_max->parent, node_min = node_min->parent)
         {;}
 
-        printf("Similarity %s and %s: ", name1, name2);
+        printf("Сходство %ls and %ls: ", name1, name2);
         AkinMakeDefinition(node_min, root);
 
-        printf("Difference %s and %s:\n", name1, name2);
-        printf("%s: ", name1);
+        printf("Различие %ls and %ls:\n", name1, name2);
+        printf("%ls: ", name1);
         AkinMakeDefinition(node1, node_min);
-        printf("%s: ", name2);
+        printf("%ls: ", name2);
         AkinMakeDefinition(node2, node_min);
 }
 

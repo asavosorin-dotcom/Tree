@@ -2,6 +2,10 @@
 
 int main(int argc, char* argv[])
 {
+    setlocale(LC_CTYPE, "");
+    wprintf(L"Кто это?\n");
+    
+
     const char* filenameread = argv[1];
     char* code_tree = CreateBuffer(filenameread).buff + 1;
     
@@ -21,14 +25,15 @@ int main(int argc, char* argv[])
             break;
         }
 
+
     default:
         return 0;
     }
 
-    // char* data0 = strdup("animal");
+    // wchar_t* data0 = (wchar_t*) strdup("животное");
     // AkinNode_t* root = AkinNodeCtor(data0, NULL, FLAG_FREE);
-    // AkinNode_t* node1 = AkinInsertElem(&root->left, "Poltorashka", root);
-    // AkinNode_t* node2 = AkinInsertElem(&root->right, "Teach matan", root);
+    // AkinNode_t* node1 = AkinInsertElem(&root->left, "Полторашка", root);
+    // AkinNode_t* node2 = AkinInsertElem(&root->right, "Ведет матан", root);
     // AkinNode_t* node3 = AkinInsertElem(&node2->left, "Petrovich", node2);
     // AkinNode_t* node4 = AkinInsertElem(&node2->right, "Pasha T", node2);
 
@@ -44,7 +49,7 @@ int main(int argc, char* argv[])
 
     // сбросить буфера
 
-    AkinDump(root, "Before akinator");
+    AkinDump(root, L"Before akinator");
 
     printf(GREEN "Start? [y/n]\n" RESET);
     int c = getchar();
@@ -59,13 +64,13 @@ int main(int argc, char* argv[])
 
     do{
         Akin(root);
-    } while (user_end_programm("Do you want to countine?"));
+    } while (user_end_programm("Хочешь продолжить?"));
 
     AkinPrintDefinition(root);
     AkinPrintDifference(root);
 
     AkinPrintNode(root, file_akin);
-    AkinDump(root, "Akinator");
+    AkinDump(root, L"Akinator");
 
     // с клавиатуры
 
@@ -78,6 +83,7 @@ int main(int argc, char* argv[])
 int user_end_programm(const char* string)
 {
     printf(BOLD_BLUE "%s\n" RESET, string);
+    clear_input_buffer();
     int command = getchar();
 
     switch (command)

@@ -1,10 +1,12 @@
 #ifndef _COLORS_
 #define _COLORS_ 
 
-//-------------------------------------------------COLORS----------------------------------------------------------------------------------
+#include <wchar.h>
 
+//-------------------------------------------------COLORS----------------------------------------------------------------------------------
 /* Reset */
 #define RESET   "\033[0m"
+#define LRESET   "\033[0m"
 
 /* Regular colors */
 #define BLACK   "\033[0;30m"
@@ -25,6 +27,26 @@
 #define BOLD_MAGENTA "\033[1;35m"
 #define BOLD_CYAN    "\033[1;36m"
 #define BOLD_WHITE   "\033[1;37m"
+
+/* Regular colors */
+#define LBLACK   L"\033[0;30m"
+#define LRED     L"\033[0;31m"
+#define LGREEN   L"\033[0;32m"
+#define LYELLOW  L"\033[0;33m"
+#define LBLUE    L"\033[0;34m"
+#define LMAGENTA L"\033[0;35m"
+#define LCYAN    L"\033[0;36m"
+#define LWHITE   L"\033[0;37m"
+
+/* Bold colors */
+#define LBOLD_BLACK   L"\033[1;30m"
+#define LBOLD_RED     L"\033[1;31m"
+#define LBOLD_GREEN   L"\033[1;32m"
+#define LBOLD_YELLOW  L"\033[1;33m"
+#define LBOLD_BLUE    L"\033[1;34m"
+#define LBOLD_MAGENTA L"\033[1;35m"
+#define LBOLD_CYAN    L"\033[1;36m"
+#define LBOLD_WHITE   L"\033[1;37m"
 
 /* Underline colors */
 #define UNDERLINE_BLACK   "\033[4;30m"

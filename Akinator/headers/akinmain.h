@@ -2,6 +2,8 @@
 #define _MAIN_H_
 
 #include <stdio.h>
+#include <locale.h>
+#include <wchar.h>
 
 #include "akinator.h"
 #include "colors.h"
