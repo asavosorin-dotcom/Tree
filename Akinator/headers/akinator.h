@@ -6,6 +6,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+
 #include "colors.h"
 
 #define PRINT_IMAGE(...) fprintf(file_dump, __VA_ARGS__)
@@ -50,12 +51,14 @@ AkinNode_t* ReadNode(int* pos, char* buffer);
 
 AkinNode_t* AkinGetNode (AkinNode_t* root, char* text);
 void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root);
-void AkinPrintDefinition(AkinNode_t* root, char* name);
+void AkinPrintDefinition(AkinNode_t* root);
 
-void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2);
+void AkinMakeDifference(AkinNode_t* root);
+void AkinPrintDifference(AkinNode_t* root);
 
 void AkinDtor(AkinNode_t* node);
 
 int skip_space(char* buffer);
+void clear_input_buffer(void);
 
 #endif

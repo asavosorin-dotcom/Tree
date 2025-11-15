@@ -62,7 +62,12 @@ void AkinDtor(AkinNode_t* node)
     if (node->right != NULL)
         AkinDtor(node->right);
     
-    if (node->flag_for_free == FLAG_FREE) free(node->string);
+    
+    if (node->flag_for_free == FLAG_FREE)
+    {
+        // printf("Dtor %s\n", node->string);
+        free(node->string);
+    }
     free(node);
 }
 
@@ -84,6 +89,8 @@ void AkinPrintNode(const AkinNode_t* node, FILE* file_akin)
         fprintf(file_akin, "nil");
 
     fprintf(file_akin, ")");
+
+    fflush(file_akin);
 }
 
 void AkinAskQuestion(AkinNode_t* node)
@@ -146,11 +153,11 @@ AkinNode_t* AkinInsertNewElem(AkinNode_t* node)
 {
     printf("Who is it?\n");
 
-    char* new_elem = (char* ) calloc(30, sizeof(char)); 
-    scanf(" %[^\n]", new_elem);
+    char* new_elem = (char* ) calloc(100, sizeof(char)); //??
+    scanf(" %[^\n]", new_elem); // ??
 
     printf("Write different with %s. It (verb)... \n", node->string);
-    char new_question[30] = "";
+    char new_question[100] = "";
     scanf(" %[^\n]", new_question);
 
     AkinNode_t* new_node_right = AkinNodeCtor(node->string, node, FLAG_NO_FREE);
@@ -305,7 +312,6 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
         return root;
     }
     
-    
     if (root->left == NULL && root->right == NULL)
     {
         return NULL;
@@ -325,7 +331,7 @@ AkinNode_t* AkinGetNode (AkinNode_t* root, char* text)
         return node;
     }
 
-    if (root->parent == NULL) printf(BOLD_RED "No such word\n" RESET);
+    if (root->parent == NULL) printf(BOLD_RED "No such word %s\n" RESET, text);
 
     return NULL;
 }
@@ -361,41 +367,111 @@ void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root)
     printf("\n");
 }
 
-void AkinPrintDefinition(AkinNode_t* root, char* name)
+void AkinPrintDefinition(AkinNode_t* root)
 {
-    AkinNode_t* node = AkinGetNode(root, name);
-    printf("%s - eto ", node->string);
-    AkinMakeDefinition(node, root);
+    while (1)
+{
+    printf("Do you want to know definition?\n");
+    printf("[y\\n] ");
+    
+    clear_input_buffer();
+ 
+    int answer = getchar();
+
+    switch (answer)
+    {
+        case 'n':
+            return;
+
+        case 'y':
+        {
+            char name[30] = "";
+    
+            printf("Enter name of termin: ");
+            scanf(" %s", name);
+
+            AkinNode_t* node = AkinGetNode(root, name);
+            if (node == NULL)
+                break;
+
+            printf("%s - eto ", node->string);
+            AkinMakeDefinition(node, root);
+        }
+            break;
+        
+        default:
+            break;
+    }
+    }
 }
 
-void AkinPrintDifference(AkinNode_t* root, char* name1, char* name2)
+void AkinPrintDifference(AkinNode_t* root)
 {
-    AkinNode_t* node1 = AkinGetNode(root, name1);
-    AkinNode_t* node2 = AkinGetNode(root, name2);
-    
-    AkinNode_t* node_max = node2;
-    AkinNode_t* node_min = node1;
-
-    if (node1->rank >= node2->rank)
+    while (1)    
     {
-        node_max = node1;
-        node_min = node2;
+        clear_input_buffer();
+        
+        printf("Do you want to know difference?\n");
+        printf("[y\\n] ");
+        
+        int answer = getchar();
+        clear_input_buffer();
+
+        switch (answer)
+        {
+            case 'n':
+                return;
+
+            case 'y':
+                AkinMakeDifference(root);
+                break;
+
+            default:
+                break;
+        }
     }
+}
 
-    for (int counter = 0; counter < (node_max->rank - node_min->rank); counter++, node_max = node_max->parent) 
-    {;}
+void AkinMakeDifference(AkinNode_t* root)
+{
+        char name1[30] = "";
+        char name2[30] = "";
 
-    for (; node_max != node_min; node_max = node_max->parent, node_min = node_min->parent)
-    {;}
+        printf("Vvedite 2 termina dlya sravneniya:\n");
+        scanf("%s", name1);
+        scanf("%s", name2);
 
-    printf("Similarity %s and %s: ", name1, name2);
-    AkinMakeDefinition(node_min, root);
+        AkinNode_t* node1 = AkinGetNode(root, name1);
+        AkinNode_t* node2 = AkinGetNode(root, name2);
 
-    printf("Difference %s and %s:\n", name1, name2);
-    printf("%s: ", name1);
-    AkinMakeDefinition(node1, node_min);
-    printf("%s: ", name2);
-    AkinMakeDefinition(node2, node_min);
+        if (node1 == NULL || node2 == NULL)
+        {
+            return;
+        }
+
+        AkinNode_t* node_max = node2;
+        AkinNode_t* node_min = node1;
+
+        if (node1->rank >= node2->rank)
+        {
+            node_max = node1;
+            node_min = node2;
+        }
+
+        for (int counter = 0; counter < (node_max->rank - node_min->rank); counter++, node_max = node_max->parent) 
+        {;}
+
+        for (; node_max != node_min; node_max = node_max->parent, node_min = node_min->parent)
+        {;}
+
+        printf("Similarity %s and %s: ", name1, name2);
+        AkinMakeDefinition(node_min, root);
+
+        printf("Difference %s and %s:\n", name1, name2);
+        printf("%s: ", name1);
+        AkinMakeDefinition(node1, node_min);
+        printf("%s: ", name2);
+        AkinMakeDefinition(node2, node_min);
 }
 
 int skip_space(char* buffer)
@@ -407,4 +483,11 @@ int skip_space(char* buffer)
         }
 
     return pos;
+}
+void clear_input_buffer(void)
+{
+    int c = 0; 
+
+    while ((c = getchar()) != '\n' && c != EOF ){;}   
+
 }

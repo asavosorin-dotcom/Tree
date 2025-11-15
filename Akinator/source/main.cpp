@@ -4,7 +4,26 @@ int main(int argc, char* argv[])
 {
     const char* filenameread = argv[1];
     char* code_tree = CreateBuffer(filenameread).buff + 1;
-    FILE* file_akin = fopen(argv[2], "w");
+    
+    FILE* file_akin = NULL;
+
+    switch (argc)
+    {
+        case 2:
+        {
+            file_akin = fopen(argv[1], "w");
+            break;
+        }
+        
+        case 3:
+        {
+            file_akin = fopen(argv[2], "w");
+            break;
+        }
+
+    default:
+        return 0;
+    }
 
     // char* data0 = strdup("animal");
     // AkinNode_t* root = AkinNodeCtor(data0, NULL, FLAG_FREE);
@@ -42,11 +61,13 @@ int main(int argc, char* argv[])
         Akin(root);
     } while (user_end_programm("Do you want to countine?"));
 
-    AkinPrintDefinition(root, "Petrovich");
+    AkinPrintDefinition(root);
+    AkinPrintDifference(root);
 
     AkinPrintNode(root, file_akin);
     AkinDump(root, "Akinator");
-    AkinPrintDifference(root, "Poltorashka", "Dog");
+
+    // с клавиатуры
 
     AkinDtor(root);
 
