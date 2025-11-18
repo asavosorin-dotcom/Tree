@@ -4,10 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
 #include <assert.h>
 #include <ctype.h>
-#include <locale.h>
 
 #include "colors.h"
 
@@ -19,7 +17,7 @@ enum Flag_yes_no_t {FLAG_NO = 0, FLAG_YES = 1};
 
 struct AkinNode_t 
 {
-    wchar_t* string;
+    char* string;
 
     AkinNode_t* left;
     AkinNode_t* right;
@@ -33,25 +31,25 @@ struct AkinNode_t
 
 enum Question_t {NO_QUESTION = 0, NEW_QUETION = 1};
 
-AkinNode_t* AkinNodeCtor (wchar_t* data, AkinNode_t* parent, Flag_free_t flag);
+AkinNode_t* AkinNodeCtor (char* data, AkinNode_t* parent, Flag_free_t flag);
 AkinNode_t* AkinInsertElem(AkinNode_t** node, const char* value, AkinNode_t* parent);
 
 void AkinDumpNode (AkinNode_t* node, FILE* file_dump);
 void AkinDumpImage(AkinNode_t* node);
-void AkinDump     (AkinNode_t* node, const wchar_t* text);
+void AkinDump     (AkinNode_t* node, const char* text);
 void AkinPrintNode(const AkinNode_t* node, FILE* file_akin);
 
 int Akin(AkinNode_t* node);
 
 void AkinAskQuestion(AkinNode_t* node);
-void AkinGetAnswer  (wchar_t* answer);
+void AkinGetAnswer  (char* answer);
 
 AkinNode_t* AkinInsertNewElem(AkinNode_t* node);
 
-char* Read_title(int* pos, char* buffer);
+char*       Read_title(int* pos, char* buffer);
 AkinNode_t* ReadNode(int* pos, char* buffer);
 
-AkinNode_t* AkinGetNode (AkinNode_t* root, wchar_t* text);
+AkinNode_t* AkinGetNode (AkinNode_t* root, char* text);
 void AkinMakeDefinition(AkinNode_t* node, AkinNode_t* root);
 void AkinPrintDefinition(AkinNode_t* root);
 
